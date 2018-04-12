@@ -216,6 +216,19 @@ void ArrayManager::setUserCallback(void *pointer, UserCallback const &f)
   pointer_record->m_user_callback = f;
 }
 
+CHAI_INLINE void ArrayManager::setObserveCopies(bool observe){
+  observe_copies = observe;
+}
+CHAI_INLINE bool ArrayManager::getObserveCopies(){
+  return observe_copies;
+}
+
+template<typename T>
+void ArrayManager::invoke_callback(Action action, T* ptr){
+  void* good_ptr = reinterpret_cast<void*>(const_cast<typename std::remove_const<T>::type*>(ptr));
+  auto pointer_record = getPointerRecord(good_ptr);
+  pointer_record->m_user_callback(action,pointer_record->m_last_space, pointer_record->m_size);
+}
 
 } // end of namespace chai
 

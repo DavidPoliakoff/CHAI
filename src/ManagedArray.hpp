@@ -220,6 +220,8 @@ class ManagedArray {
 
   CHAI_HOST_DEVICE ManagedArray<T>& operator= (std::nullptr_t);
 
+  CHAI_HOST_DEVICE ~ManagedArray();
+
   private:
 
   /*! 
@@ -236,6 +238,12 @@ class ManagedArray {
    * Number of elements in the ManagedArray.
    */
   size_t m_elems;
+
+  /*!
+   * Whether this is a "major" copy which should be observed
+   * (as opposed to an intermediate copy)
+   */
+  bool observable;
   
 };
 

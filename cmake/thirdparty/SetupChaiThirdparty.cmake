@@ -41,9 +41,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #######################################################################
 
-find_package(Umpire REQUIRED)
+find_package(umpire REQUIRED)
 
 blt_register_library(
   NAME umpire
   INCLUDES ${UMPIRE_INCLUDE_DIRS}
-  LIBRARIES umpire)
+  LIBRARIES umpire umpire_op  umpire_resource  umpire_strategy  umpire_tpl_judy  umpire_util
+  )

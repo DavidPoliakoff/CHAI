@@ -52,7 +52,9 @@ namespace chai {
   enum Action {
     ACTION_ALLOC,
     ACTION_FREE,
-    ACTION_MOVE
+    ACTION_MOVE,
+    ACTION_PRE_TOUCH,
+    ACTION_POST_TOUCH
   };
 
 	using UserCallback = std::function<void(Action, ExecutionSpace, size_t)>;

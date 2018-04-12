@@ -53,7 +53,8 @@ CHAI_INLINE
 CHAI_HOST_DEVICE ManagedArray<T>::ManagedArray():
   m_active_pointer(nullptr),
   m_resource_manager(nullptr),
-  m_elems(0)
+  m_elems(0),
+  observable(false)
 {
   m_resource_manager = ArrayManager::getInstance();
 }
@@ -64,7 +65,8 @@ CHAI_HOST_DEVICE ManagedArray<T>::ManagedArray(
     size_t elems, ExecutionSpace space):
   m_active_pointer(nullptr),
   m_resource_manager(nullptr),
-  m_elems(elems)
+  m_elems(elems),
+  observable(false)
 {
   m_resource_manager = ArrayManager::getInstance();
   this->allocate(elems, space);
@@ -75,7 +77,8 @@ CHAI_INLINE
 CHAI_HOST_DEVICE ManagedArray<T>::ManagedArray(std::nullptr_t) :
   m_active_pointer(nullptr),
   m_resource_manager(nullptr),
-  m_elems(0)
+  m_elems(0),
+  observable(false)
 {
 }
 
@@ -85,13 +88,14 @@ CHAI_INLINE
 CHAI_HOST_DEVICE ManagedArray<T>::ManagedArray(ManagedArray const& other):
   m_active_pointer(other.m_active_pointer),
   m_resource_manager(other.m_resource_manager),
-  m_elems(other.m_elems)
+  m_elems(other.m_elems),
+  observable(false)
 {
 #if !defined(__CUDA_ARCH__)
   CHAI_LOG("ManagedArray", "Moving " << m_active_pointer);
-
+  
   m_active_pointer = static_cast<T*>(m_resource_manager->move(const_cast<T_non_const*>(m_active_pointer)));
-
+  observable = m_resource_manager->getObserveCopies();
   CHAI_LOG("ManagedArray", "Moved to " << m_active_pointer);
 
   /*
@@ -102,6 +106,12 @@ CHAI_HOST_DEVICE ManagedArray<T>::ManagedArray(ManagedArray const& other):
     T_non_const* non_const_pointer = const_cast<T_non_const*>(m_active_pointer);
     m_resource_manager->registerTouch(non_const_pointer);
   }
+
+  if(observable)
+  {
+    m_resource_manager->invoke_callback(ACTION_PRE_TOUCH,m_active_pointer);
+    // TODO: invoke callback
+  }
 #endif
 }
 
@@ -110,7 +120,8 @@ CHAI_INLINE
 CHAI_HOST_DEVICE ManagedArray<T>::ManagedArray(T* data, ArrayManager* array_manager, size_t elems) :
   m_active_pointer(data), 
   m_resource_manager(array_manager),
-  m_elems(elems)
+  m_elems(elems),
+  observable(false)
 {
 }
 
@@ -203,7 +214,8 @@ CHAI_INLINE
 CHAI_HOST_DEVICE ManagedArray<T>::ManagedArray(T* data, bool test) :
   m_active_pointer(data),
   m_resource_manager(ArrayManager::getInstance()),
-  m_elems(m_resource_manager->getSize(m_active_pointer))
+  m_elems(m_resource_manager->getSize(m_active_pointer)),
+  observable(false)
 {
 }
 #endif
@@ -225,6 +237,21 @@ ManagedArray<T>::operator= (std::nullptr_t from) {
   m_active_pointer = from;
   m_elems = 0;
   return *this;
+}
+
+template<typename T>
+CHAI_INLINE
+CHAI_HOST_DEVICE ManagedArray<T>::~ManagedArray(){
+  if(observable){
+    m_resource_manager->invoke_callback(ACTION_POST_TOUCH,m_active_pointer);
+    // TODO: invoke callback
+  }
+}
+
+template<typename T>
+CHAI_INLINE
+CHAI_HOST_DEVICE void ManagedArray<T>::setUserCallback(UserCallback const& cback){
+  m_resource_manager->setUserCallback(reinterpret_cast<void*>(m_active_pointer), cback);
 }
 
 } // end of namespace chai

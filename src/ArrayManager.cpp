@@ -69,6 +69,7 @@ ArrayManager::ArrayManager() :
   m_pointer_map.clear();
   m_current_execution_space = NONE;
   m_default_allocation_space = CPU;
+  observe_copies = false;
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
 

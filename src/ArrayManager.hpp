@@ -154,6 +154,25 @@ class ArrayManager
   void* reallocate(void* pointer, size_t elems);
 
   /*!
+   * \brief Tell copied ManagedArrays to observe their pre-touch and post-touch events
+   *
+   * \param observe true if those events should be triggered, false if not
+   * 
+   */
+  void setObserveCopies(bool observe);
+
+  template<typename T>
+  void invoke_callback(Action action, T* ptr);
+
+  /*!
+   * \brief Return whether copied ManagedArrays should observe their pre-touch and post-touch events
+   *
+   * \return true if ManagedArrays should observe these events, false if not
+   * 
+   */
+  bool getObserveCopies();
+
+  /*!
    * \brief Set the default space for new ManagedArray allocations.
    *
    * ManagedArrays allocated without an explicit ExecutionSpace argument will
@@ -289,6 +308,12 @@ class ArrayManager
    * \brief Array of umpire::Allocators, indexed by ExecutionSpace.
    */
   umpire::Allocator* m_allocators[NUM_EXECUTION_SPACES];
+
+  /*!
+   *
+   * \brief Whether copied ManagedArrays should do pre or post-touch callbacks
+   */
+  bool observe_copies;
 };
 
 } // end of namespace chai

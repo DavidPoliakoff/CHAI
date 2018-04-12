@@ -57,7 +57,7 @@ int main(int CHAI_UNUSED_ARG(argc), char** CHAI_UNUSED_ARG(argv)) {
   /*
    * Allocate an array on the device only
    */
-  chai::ManagedArray<int> device_array(10, chai::GPU);
+  //chai::ManagedArray<int> device_array(10, chai::GPU);
 
   std::cout << "Arrays created." << std::endl;
 
@@ -73,9 +73,9 @@ int main(int CHAI_UNUSED_ARG(argc), char** CHAI_UNUSED_ARG(argv)) {
   std::cout << " ]" << std::endl;
 
   std::cout << "Setting v2 and device_array on device." << std::endl;
-  forall(cuda(), 0, 10, [=] __device__ (int i) {
+  forall(sequential(), 0, 10, [=] __device__ (int i) {
       v2[i] = v1[i]*2.0f;
-      device_array[i] = i;
+      //device_array[i] = i;
   });
 
   std::cout << "v2 = [";
@@ -85,7 +85,7 @@ int main(int CHAI_UNUSED_ARG(argc), char** CHAI_UNUSED_ARG(argv)) {
   std::cout << " ]" << std::endl;
 
   std::cout << "Doubling v2 on device." << std::endl;
-  forall(cuda(), 0, 10, [=] __device__ (int i) {
+  forall(sequential(), 0, 10, [=] (int i) {
       v2[i] *= 2.0f;
   });
 
@@ -99,14 +99,9 @@ int main(int CHAI_UNUSED_ARG(argc), char** CHAI_UNUSED_ARG(argv)) {
   std::cout << " ]" << std::endl;
 
   std::cout << "Casting device_array to a pointer." << std::endl;
-  int* raw_device_array = device_array;
   std::cout  << "device_array = [";
-  for (int i = 0; i < 10; i++ ) {
-      std::cout << " " << device_array[i];
-  }
   std::cout << " ]" << std::endl;
 
   v1.free();
   v2.free();
-  device_array.free();
 }
